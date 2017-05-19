@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -13,10 +15,9 @@ import it.polito.tdp.metrodeparis.model.*;
 
 import com.javadocmd.simplelatlng.LatLng;
 
-import it.polito.tdp.metrodeparis.model.Fermata;
-
 public class MetroDAO {
 	private Map<Integer, Fermata> mapfermate= new TreeMap<Integer, Fermata>();
+	private Map<String, FermataConLinea> mapF= new HashMap<String, FermataConLinea>();
 
 	public List<Fermata> getAllFermate() {
 
@@ -105,6 +106,40 @@ public class MetroDAO {
 		
 		return stops;
 	}
+
+	public List<FermataConLinea> getFermateConLinea() {
+		final String sql = "SELECT DISTINCT fermata.id_fermata, fermata.nome, fermata.coordX, fermata.coordY, connessione.id_linea "+
+				"FROM fermata, connessione "+
+				"WHERE fermata.id_fermata=connessione.id_stazP";
+		
+		List<FermataConLinea> fermate = new ArrayList<FermataConLinea>();
+
+		try {
+			Connection conn = DBConnect.getInstance().getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				FermataConLinea f = new FermataConLinea(rs.getInt("id_Fermata"), rs.getString("nome"), new LatLng(rs.getDouble("coordx"), rs.getDouble("coordy")),rs.getInt("id_linea"));
+				fermate.add(f);
+				
+				mapF.put(f.getIdFermata()+"_"+f.getId(), f);
+				Fermata myf = mapfermate.get(f.getIdFermata());
+				myf.addChild(f);
+			}
+
+			st.close();
+			conn.close();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Errore di connessione al Database.");
+		}
+		return fermate;
+	}
 	
+	public Map<String, FermataConLinea> getMappaFermateConLinea(){
+		return mapF;
+	}
 	
 }

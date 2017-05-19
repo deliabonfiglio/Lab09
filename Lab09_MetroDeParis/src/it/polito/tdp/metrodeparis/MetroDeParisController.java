@@ -50,7 +50,6 @@ import javafx.scene.control.TextArea;
 */
 	    @FXML
 	    void doCercaPercorso(ActionEvent event) {
-	    	model.createGraph();
 	    	
 	    	Fermata partenza = cmbPartenza.getValue();
 	    	Fermata arrivo = cmbArrivo.getValue();
@@ -59,17 +58,12 @@ import javafx.scene.control.TextArea;
 	    		textArea.setText("Scegliere le stazioni di partenza e arrivo\n");
 	    		return;
 	    	}
-	    	List<DefaultWeightedEdge> archi = new ArrayList<DefaultWeightedEdge>(model.camminoMinimo(partenza, arrivo));
+	    	model.createGraph();
+			double tempo=model.pesoCamminoMinimo(partenza, arrivo)/60;
 	    	
-	    	if(!archi.isEmpty()){
-	    		textArea.setText("Percorso di lunghezza minima: \n"+archi.toString());
-	    		double minuti= model.pesoCamminoMinimo(partenza, arrivo)/60;
-	    		textArea.appendText("\nTempo di percorrenza stimato in minuti: "+minuti);
-	    	
-	    	}else{
-	    		textArea.setText("Non esiste un percorso tra le fermate scelte");
-	    	}
-	    	
+			textArea.appendText(model.camminoMinimo());	
+			textArea.appendText("Tempo di percorrenza stimato in minuti: "+Double.toString(tempo)+"\n" );
+			
 	    }
 
 	    @FXML // This method is called by the FXMLLoader when initialization is complete
